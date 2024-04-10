@@ -49,11 +49,11 @@ def get_proxied_firefox(options, log_file_path='logs'):
     driver = get_firefox(options)
 
     # Save the proxy HAR to a file
-    with open(log_file_path, 'w') as logfile:
-        import json
-        logfile.write(json.dumps(proxy.har, ensure_ascii=False))
+    # with open(log_file_path, 'w') as logfile:
+    #     import json
+    #     logfile.write(json.dumps(proxy.har, ensure_ascii=False))
 
-    return driver
+    return driver,proxy
 
 
 # Function to download and extract geckodriver
@@ -106,9 +106,11 @@ if __name__=="__main__":
 
 
     options = Options()
-    driver = get_proxied_firefox(options)
+    driver,proxy = get_proxied_firefox(options)
+    print(dir(proxy))#proxy.__dict__.keys())
     # Now you can use driver to navigate
     driver.get("https://github.com/nevakrien/")
     print(driver.title)
+
 
     driver.quit()

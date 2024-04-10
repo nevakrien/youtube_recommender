@@ -1,3 +1,7 @@
+logs
+network_traffic.json
+page_source.html
+
 geckodriver
 firefox
 browsermob-proxy/

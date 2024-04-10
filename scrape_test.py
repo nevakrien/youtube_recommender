@@ -1,19 +1,31 @@
 from browsermobproxy import Server
-from env_setup import get_firefox
+from env_setup import get_firefox,get_proxied_firefox
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 import json
 
-# Path to BrowserMob Proxy binary
-bmp_path = 'path/to/browsermob-proxy'
+from selenium.webdriver.remote.webelement import WebElement
 
-#Start BrowserMob Proxy
-server = Server(bmp_path)
-server.start()
-proxy = server.create_proxy()
+def find_parent_with_aria_label(element):
+    """
+    Recursively traverses up the DOM tree from the given element
+    until an element with an 'aria-label' attribute is found.
+    :param element: The starting WebElement to search from.
+    :return: WebElement with 'aria-label' or None if not found.
+    """
+    while element and isinstance(element, WebElement):
+        aria_label = element.get_attribute('aria-label')
+        if aria_label:
+            return element
+        else:
+            # Move to the parent element using XPath's parent axis
+            element = element.find_element(By.XPATH, '..')
+    return None
 
 # Setup WebDriver with Proxy
 options = webdriver.FirefoxOptions()
-driver = get_firefox(options)
+#options.add_argument("--headless")
+driver,proxy = get_proxied_firefox(options)
 print('yay')
 # Start capturing traffic
 #proxy.new_har("https://github.com/nevakrien/")
@@ -25,17 +37,51 @@ print('yay')
 import time
 
 # Open a website
-driver.get("https://github.com/nevakrien/")
+driver.get("https://www.youtube.com/watch?v=p60L-TOecik")
 
-time.sleep(5)
+time.sleep(3)
 
-# Dump captured data to files
+# # Dump captured data to files
 with open('network_traffic.json', 'w') as traffic_file:
     json.dump(proxy.har, traffic_file)
 
 with open('page_source.html', 'w') as html_file:
     html_file.write(driver.page_source)
 
+#elements_containing_like = driver.find_elements(By.XPATH, "//*[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'like')]")
+#elements_containing_like = driver.find_elements(By.XPATH, '/.[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "like")]')
+
+# Use find_elements with By.XPATH to find the smallest elements that contain the text "like"
+#elements_containing_like = driver.find_elements(By.XPATH, "//text()[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'like')]/parent::*[not(./*[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'like')])]")
+
+#GOOD
+#elements_containing_like = driver.find_elements(By.XPATH, '//*[@title="I like this"]')
+
+#less good but worth checking
+elements_containing_like = driver.find_elements(By.XPATH, '//*[contains(translate(@title, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "like")]')
+
+
+
+
+print(len(elements_containing_like))
+for element in elements_containing_like:
+    print(10*"!")
+    print(element.tag_name)
+    print(element.text)
+
+    parent_with_aria_label = find_parent_with_aria_label(element)
+    if parent_with_aria_label:
+        print("Found an element with aria-label:", parent_with_aria_label.get_attribute('aria-label'))
+    else:
+        print("No parent element with aria-label found.")
+        #print(element.aria-label)
+
+
+
+# for element in elements_containing_like:
+#     if element.tag_name!="script":
+#         print(element.tag_name, element.get_attribute('outerHTML'))
+
 # Stop the proxy and close the browser
-server.stop()
+# server.stop()
 driver.quit()
