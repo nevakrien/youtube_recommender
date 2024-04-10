@@ -77,10 +77,19 @@ for element in elements_containing_like:
         #print(element.aria-label)
 
 
+print(3*"\n")
 
-# for element in elements_containing_like:
-#     if element.tag_name!="script":
-#         print(element.tag_name, element.get_attribute('outerHTML'))
+#info_elements = driver.find_elements(By.ID, "info")
+info_elements = driver.find_elements( By.XPATH, "//*[contains(@id, 'info')]//*[contains(@class, 'yt-formatted-string') and contains(., 'views')]")
+#info_element = driver.find_element(By.XPATH, "//g[contains(@id, 'info')]//*[contains(@class, 'yt-formatted-string') and contains(text(), 'views')]")
+
+for e in info_elements:
+    print(10*"!")
+    print(e.text)#e.get_attribute('outerHTML'))
+#views_element = info_element.find_element(By.XPATH, ".//*[contains(text(), 'views')]")
+#views_element = info_element.find_element(By.XPATH, ".//span[contains(@class, 'yt-formatted-string') and contains(text(), 'views')]")
+
+
 
 # Stop the proxy and close the browser
 # server.stop()
